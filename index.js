@@ -218,6 +218,7 @@ const resolvers = {
         addBook: async (root, args, context) => {
             const currentUser = context.currentUser;
             if (!currentUser) {
+                console.log('no token');
                 throw new GraphQLError('not authenticated', {
                     extensions: {
                         code: 'UNAUTHENTICATED'
@@ -226,11 +227,12 @@ const resolvers = {
             }
 
             const author = await Author.findOne({ name: args.author });
-            const book = new Book({ ...args, author: author._id })
+            const book = new Book({ ...args, author: author })
 
             try {
                 await book.save();
             } catch (error) {
+                console.log('bad data');
                 throw new GraphQLError('Saving book failed', {
                     extensions: {
                         code: 'BAD_USER_INPUT',
@@ -244,6 +246,7 @@ const resolvers = {
             // }
             // const book = { ...args, id: uuid() };
             // books = books.concat(book);
+            console.log('book', book);
             return book;
         },
         editAuthor: async (root, args, context) => {
