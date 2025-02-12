@@ -1,16 +1,47 @@
 import { useState } from "react";
 import Authors from "./components/Authors";
-import Books from "./components/Books";
-import NewBook from "./components/NewBook";
+import Books, { ALL_BOOKS } from "./components/Books";
+import NewBook, { BOOK_ADDED } from "./components/NewBook";
 import Login from "./components/Login";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient, useQuery, useMutation, useSubscription } from "@apollo/client";
 import Recommendations from "./components/Reccomendations";
 
+export const updateCache = (cache, query, addedBook) => {
+  // helper that is used to eliminate saving same person twice
+  const uniqByName = (a) => {
+    let seen = new Set()
+    return a.filter((item) => {
+      let k = item.name
+      return seen.has(k) ? false : seen.add(k)
+    })
+  }
+
+  cache.updateQuery(query, ({ allBooks }) => {
+    return {
+      allBooks: uniqByName(allBooks.concat(addedBook)),
+    }
+  })
+
+  // Log the cache after the update
+  console.log("Cache after update:", cache.readQuery(query));
+}
 
 const App = () => {
   const [page, setPage] = useState("authors");
   const [token, setToken] = useState(null);
   const client = useApolloClient()
+
+  useSubscription(BOOK_ADDED, {
+    onData: (({ data }) => {
+      const bookAdded = data.data.bookAdded;
+      alert(`New book added: ${bookAdded.title}`);
+      console.log('client.cahce:', client.cache);
+      updateCache(client.cache, { query: ALL_BOOKS }, bookAdded);
+      // Log the cache directly after the update
+      const cachedData = client.cache.readQuery({ query: ALL_BOOKS });
+      console.log("Cache directly after update:", cachedData);
+    })
+  });
 
   const logout = () => {
     setToken(null);

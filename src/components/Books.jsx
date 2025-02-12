@@ -15,6 +15,15 @@ export const ALL_BOOKS = gql`
   }
 `;
 
+export const BOOK_DETAILS = gql`fragment BookDetails on Book {
+   title
+   published
+   author {
+     name
+    }
+   genres
+}`;
+
 const Books = (props) => {
   const [selectedGenre, setSelectedGenre] = useState();
   const [genresSet, setGenresSet] = useState([]);
@@ -24,7 +33,7 @@ const Books = (props) => {
   //--------------------------
 
   const { data, loading, error, refetch } = useQuery(ALL_BOOKS, {
-    variables: { genre: selectedGenre }
+    variables: { genre: selectedGenre === 'all genres' ? undefined : selectedGenre },
   });
 
   useEffect(() => {
@@ -40,7 +49,7 @@ const Books = (props) => {
 
   useEffect(() => {
     if (selectedGenre) {
-      refetch({ genre: (selectedGenre === 'all genres' ? undefined : selectedGenre) });
+      refetch({ genre: selectedGenre === 'all genres' ? undefined : selectedGenre });
     }
   }, [selectedGenre, refetch]);
 
@@ -49,15 +58,15 @@ const Books = (props) => {
     setSelectedGenre(filter);
 
     // if (filter === 'all genres') {
-      // const uniqueGenres = new Set();
-      // data.allBooks.forEach((book) => {
-      //   book.genres.forEach(genre => uniqueGenres.add(genre));
-      // });
-      // uniqueGenres.add('all genres');
-      // setGenresSet([...uniqueGenres]);
-      // setSelectedGenre
-      //filter with react
-      // setFilteredBooks(undefined);
+    // const uniqueGenres = new Set();
+    // data.allBooks.forEach((book) => {
+    //   book.genres.forEach(genre => uniqueGenres.add(genre));
+    // });
+    // uniqueGenres.add('all genres');
+    // setGenresSet([...uniqueGenres]);
+    // setSelectedGenre
+    //filter with react
+    // setFilteredBooks(undefined);
     // }
     // setFilteredBooks(data.allBooks.filter(book => book.genres.includes(filter)));
   };
